@@ -1,0 +1,90 @@
+# Réglages du pipeline de montage LoL.
+# Toutes les valeurs ajustables vivent ici : les scripts n'ont aucun chiffre "magique".
+
+chemins:
+  # Dossier racine des enregistrements, vu depuis Windows (pour Resolve)
+  racine_windows: 'C:\Users\Tristan\Videos\Records'
+  # Même dossier vu par les scripts (Linux de Cowork ou Windows). Laisser vide = détection auto.
+  racine_locale: ''
+  # Sous-dossier de travail créé pour chaque vidéo : <racine>/_montage/<nom de la vidéo>/
+  travail: '_montage'
+  musiques: 'Musiques'
+  effets_sonores: 'Musiques/Sounds Effects'
+  runes: 'League Of Legends/Runes Artworks'
+  template_runes: 'League Of Legends/Runes Artworks/Resolve Runes/Template Runes.drt'
+
+video:
+  fps: 60
+  largeur: 1920
+  hauteur: 1080
+  # Pistes audio OBS : index du flux dans le fichier (0 = premier flux audio)
+  piste_jeu: 0
+  piste_micro: 1
+
+transcription:
+  modele: small          # faster-whisper : tiny / base / small / medium
+  langue: fr
+  prompt: "Partie de League of Legends commentée en français : jungle, drake, baron, gank, top, mid, bot, farm, ult, flash, kill, tour, nexus."
+  duree_max_mot_s: 2.5   # whisper étire parfois un mot : on le borne
+  fusion_ecart_s: 0.6    # deux mots séparés de moins que ça = même phrase
+
+mesures:
+  pas_rms_s: 0.5         # résolution des mesures de volume
+  fps_analyse_image: 2   # images par seconde analysées pour les morts
+  pas_hud_s: 5           # une lecture du HUD toutes les N secondes
+
+# Écran gris de mort : saturation moyenne de l'image très basse pendant un moment
+morts:
+  ratio_saturation: 0.40     # saturation < 40 % de la saturation médiane de la partie
+  duree_min_s: 5
+  fusion_s: 3
+
+# Lecture du HUD en 1080p (coin haut droit : score d'équipe, KDA, horloge)
+hud:
+  zone: {x: 1540, y: 0, l: 380, h: 32}
+  champs:                 # colonnes (en px) à l'intérieur de la zone
+    kills_bleu: [10, 42]
+    kills_rouge: [50, 75]
+    kda: [120, 180]
+    horloge: [315, 365]
+
+coupes:
+  marge_avant_parole_s: 0.6   # la coupe se termine 0,6 s avant que tu reparles
+  marge_apres_parole_s: 0.9   # la coupe commence 0,9 s après la fin de ta phrase
+  duree_min_s: 1.5            # une coupe plus courte ne vaut pas le coup
+  silence_min_s: 4            # silence minimum pour proposer une coupe en phase calme
+  garde_evenement_s: 4        # jamais de coupe automatique à moins de 4 s d'un kill / mort
+  reaction_apres_mort_s: 2.5  # on garde 2,5 s après une mort pour la réaction
+  # Volume du jeu (dBFS, par tranche de 0,5 s) pour juger du calme
+  jeu_calme_moyenne_db: -50
+  jeu_calme_max_db: -42
+  jeu_hesitant_moyenne_db: -45.5
+  accelerer_min_s: 8          # silence avec action plus long que ça -> proposer d'accélérer
+  fondu_audio_images: 5       # fondu audio posé à chaque coupe
+
+son:
+  # Cibles de volume (LUFS, norme ITU-R BS.1770-4)
+  micro_lufs: -16
+  jeu_lufs: -24
+  sfx_lufs: -30            # 6 à 8 dB sous la voix
+  musique_lufs: -36        # Resolve refuse une cible < -30 : on fabrique une copie pré-baissée
+  sfx_moment_max_cible: -26   # volume momentané max d'un effet (sert au gain conseillé)
+  fondu_musique_entree_images: 30
+  fondu_musique_sortie_images: 90
+
+resolve:
+  projet: ''                     # vide = un projet par vidéo, nommé comme la vidéo
+  dossiers: ['01 Rushes', '02 Timelines', '03 Habillage', '04 Runes', 'Archive']
+  pistes_video: ['Gameplay', 'Artwork', 'Titres']
+  pistes_audio: ['Jeu', 'Micro', 'Musique', 'SFX']
+  couleurs_marqueurs:
+    coupe_evidente: Red
+    a_discuter: Yellow
+    moment_fort: Green
+    idee: Blue
+  # Pan/Tilt de l'API : Pan est exprimé en unités de hauteur (px * 1080/1920 horizontalement)
+  facteur_pan: 0.5625
+
+intro:
+  duree_cible_s: [15, 25]
+  styles: ['storytelling', 'spectaculaire', 'humour']

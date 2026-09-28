@@ -1,0 +1,6 @@
+# Nécessite aussi ffmpeg / ffprobe et tesseract dans le PATH
+numpy>=1.24
+pyyaml>=6
+pillow>=10
+opencv-python-headless>=4.8
+faster-whisper>=1.0

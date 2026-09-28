@@ -1,0 +1,19 @@
+# Aucun média dans le dépôt : trop lourd, et contenus protégés (musiques, artworks Riot)
+*.mp4
+*.mkv
+*.mov
+*.wav
+*.mp3
+*.ogg
+*.flac
+*.opus
+*.png
+*.jpg
+*.jpeg
+!docs/**/*.png
+# Fichiers de travail générés
+_montage/
+__pycache__/
+*.pyc
+.venv/
+*.sfk
