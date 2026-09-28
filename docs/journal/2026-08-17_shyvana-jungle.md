@@ -4,7 +4,7 @@ Première vidéo, qui a servi de terrain d'essai pour tout le pipeline.
 
 ## La partie
 - Rush : `2026-08-17 01-53-04.mp4`, 27:06, 1080p 60 i/s, 2 pistes audio (jeu / micro).
-- Horloge du jeu = temps vidéo − 37 s.
+- Horloge du jeu = temps vidéo + 37 s.
 - Déroulé : très bon début (4/0/1 vers 10 min, « on est extrêmement bien »), puis Gwen te one-shot et l'ennemi prend le Baron (~23:07), re-one-shot, vol de drake raté, défaite par abandon (« elle était si bien la game »).
 - Kills vers 3:15, 4:47, 8:48, 9:43, 20:02 ; morts à 12:27, 18:19, 23:07, 24:56, 26:20 (temps vidéo).
 

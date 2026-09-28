@@ -108,11 +108,23 @@ fen = max(1, int(3 * FPS_A))
 lisse = np.convolve(val, np.ones(fen) / fen, mode="same")
 
 
+R = lisse / med  # saturation relative : ~1 en jeu, 0,4 à 0,8 quand l'écran est gris
+N2 = int(2 * FPS_A)  # 2 secondes d'échantillons
+
+
+def debut_de_mort(a, b):
+    """Premier instant de [a, b] où l'écran devient gris et le reste au moins 2 s."""
+    for i in np.where((tps >= a) & (tps <= b))[0]:
+        if R[i] < 0.7 and (R[i:i + N2] < 0.9).all():
+            return float(tps[i])
+    return None
+
+
 def fin_de_mort(debut):
-    i = int(np.searchsorted(tps, debut + 5))
-    stable = int(2 * FPS_A)
-    while i < len(tps) - stable:
-        if (lisse[i:i + stable] > 0.85 * med).all() or tps[i] > debut + 75:
+    """Retour des couleurs : saturation relative > 0,95 pendant 2 s (réapparition), au plus 90 s."""
+    i = int(np.searchsorted(tps, debut + 4))
+    while i < len(tps) - N2:
+        if (R[i:i + N2] > 0.95).all() or tps[i] > debut + 90:
             return float(tps[i])
         i += 1
     return duree
@@ -186,11 +198,13 @@ t.ecrire("analyse/evenements.json", evenements)
 # Morts : départ = mort lue dans le KDA (recalée sur la baisse de saturation), fin = retour des couleurs
 morts = []
 for e in (x for x in evenements if x["type"] == "mort"):
-    fenetre = np.where((tps >= e["debut"] - 6) & (tps <= e["fin"] + 1) & (lisse < 0.72 * med))[0]
-    d0 = float(tps[fenetre[0]]) if len(fenetre) else e["debut"]
+    d0 = debut_de_mort(e["debut"] - 2, e["fin"] + 8) or e["debut"]
     morts.append([d0, fin_de_mort(d0), "kda"])
 for a0, f0, src in etat["_morts_saturation"]:  # morts vues seulement à l'image (ex. fin de partie)
-    if not any(a0 < m[1] and f0 > m[0] for m in morts):
+    proche = next((m for m in morts if a0 < m[1] + 15 and f0 > m[0]), None)
+    if proche:  # même mort (ex. coupée par un alt-tab) : on prolonge
+        proche[1] = max(proche[1], f0)
+    else:
         morts.append([a0, f0, src])
 morts.sort()
 t.ecrire("analyse/morts.json", {"saturation_mediane": med, "morts": [m[:2] for m in morts],

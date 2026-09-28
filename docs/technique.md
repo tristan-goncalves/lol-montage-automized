@@ -8,6 +8,12 @@ Tout ce qui a été appris en le cassant au moins une fois. À relire avant de t
 - Resolve doit être **ouvert** avec le bon projet. Si un outil répond « Not connected » : `resolve_control launch`.
 - La machine Linux de Cowork voit le dossier Records dans `~/mnt/Records` ; Resolve (Windows) le voit dans `C:\Users\Tristan\Videos\Records`. `commun.vers_windows()` fait la traduction.
 
+## Contraintes de Cowork (machine Linux sur le PC)
+- Chaque commande est coupée au bout de **3 minutes**, et tout processus lancé en arrière-plan meurt avec elle (bac à sable `--die-with-parent`). → Scripts par tranches, relancés tant qu'ils affichent « À RELANCER ».
+- **Pas de suppression** de fichiers dans les dossiers connectés (sauf autorisation explicite). Conséquence : `git` ne marche pas depuis Cowork (il doit supprimer ses fichiers `index.lock`) → commits et push faits par Tristan sous Windows. Ne lancer AUCUNE commande git depuis Cowork, même `git status` : elle laisse un `.git/index.lock` impossible à supprimer qui bloque ensuite git sous Windows.
+- Envoi de fichiers du cloud vers le PC (`device_commit_files`) : utiliser un **nom de staging unique** à chaque envoi, sinon une ancienne version peut être réécrite. Vérifier avec `md5sum`.
+- 2 cœurs seulement : la transcription se fait plutôt dans l'espace de travail cloud (audio exporté en `.opus` de ~3 Mo).
+
 ## Son
 - **Ne jamais importer de FCPXML / XML** : le son arrive fusionné (jeu en mono gauche/droite, voix perdue). Toujours extraire `jeu.wav` et `micro.wav` (script 01) et les poser nous-mêmes sur A1 / A2.
 - **Volume d'un clip** : `timeline_item set_audio Volume` ne marche pas (renvoie false). Utiliser `timeline normalize_audio_level(item_ids, {"normalizationMode": "ITU-R BS.1770-4", "targetLoudness": -16})`. Les ID sont ceux des **éléments de timeline**, pas des médias.
@@ -58,6 +64,6 @@ Tout ce qui a été appris en le cassant au moins une fois. À relire avant de t
 
 ## Analyse
 - faster-whisper (modèle `small`, français, horodatage par mot) : bon compromis. Il étire parfois un mot sur plusieurs secondes → durée d'un mot bornée à 2,5 s.
-- Morts : l'écran devient gris → saturation moyenne de l'image < 40 % de la médiane de la partie pendant ≥ 5 s.
-- HUD (1080p) : zone x 1540, y 0, 380×32 px ; tesseract avec liste de caractères autorisés, agrandi ×4. Une valeur n'est retenue que si elle est lue deux fois de suite et ne décroît jamais.
-- Décalage observé sur la partie du 17/08 : horloge du jeu = temps vidéo − 37 s (dépend du moment où OBS a été lancé).
+- HUD (1080p) : zone x 1540, y 0, 380×32 px. **Pas de tesseract** : il confond le 5 avec 3 ou 9 sur cette police. Lecture par comparaison à des modèles de caractères (`scripts/hud_ocr.py`, modèles dans `templates/hud_caracteres.json`, 0 erreur sur 32 valeurs de test). Une valeur n'est retenue que si elle est lue deux fois de suite et ne décroît jamais.
+- Morts : départ = mort lue dans le KDA, recalée sur le moment où la saturation relative passe sous 0,7 ; fin = saturation relative > 0,95 pendant 2 s (réapparition). Précision constatée : ±1 s sur les 5 morts du 17/08.
+- Décalage observé sur la partie du 17/08 : horloge du jeu = temps vidéo + 37 s (dépend du moment où OBS a été lancé).

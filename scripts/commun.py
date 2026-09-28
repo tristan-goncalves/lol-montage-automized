@@ -84,7 +84,8 @@ def sonder(video: Path) -> dict:
 
 
 def ffmpeg(*args: str, capture: bool = False):
-    cmd = ["ffmpeg", "-hide_banner", "-nostdin", "-y", *args]
+    # En mode capture on garde les messages (les filtres d'analyse y écrivent leurs mesures)
+    cmd = ["ffmpeg", "-hide_banner", "-nostdin", "-y", *([] if capture else ["-loglevel", "error"]), *args]
     return subprocess.run(cmd, capture_output=capture, text=capture, check=not capture)
 
 

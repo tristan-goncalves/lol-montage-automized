@@ -69,7 +69,8 @@ for s0, s1 in silences:
 
 for a, b in noirs:
     if b - a >= 0.3:
-        C.append([a, b, "Écran noir"])
+        m = dans_mort(a, b)
+        C.append([a, b, f"Écran noir pendant la mort de {tc(m[0])} (alt-tab ?)" if m else "Écran noir"])
     else:
         D.append([a, b, "couper", "élevée", "Écran noir d'une fraction de seconde (glitch d'enregistrement ?)"])
 
@@ -81,7 +82,7 @@ for a, b, r in C:
         fusion[-1][1] = max(fusion[-1][1], b)
     else:
         fusion.append([a, b, r])
-C = fusion
+C = [x for x in fusion if x[1] - x[0] >= 0.3]
 
 # Moments forts : kills / morts du HUD, puis pics d'excitation dans ta voix
 M = []
@@ -122,6 +123,10 @@ t.ecrire("propositions/propositions.json", items)
 # ---------- Rapport lisible ----------
 total_c = sum(b - a for a, b, _ in C)
 total_d = sum(x[1] - x[0] for x in D if x[2] == "couper")
+def duree_txt(d):
+    return f"{d:.1f} s" if d < 2 else f"{d:.0f} s"
+
+
 titres = {"C": "Coupes évidentes", "D": "À discuter", "M": "Moments forts", "I": "Idées et intros"}
 L = [f"# Propositions de montage — {t.nom}", "",
      f"- Durée brute : **{tc(duree)}**",
@@ -136,7 +141,7 @@ for cat in "CDMI":
     L += [f"## {titres[cat]}", "", "| N° | Début | Fin | Durée | Action | Confiance | Pourquoi |", "|---|---|---|---|---|---|---|"]
     for x in lignes:
         pourquoi = x["raison"] + (f" — « {x['extrait']} »" if x.get("extrait") else "")
-        L.append(f"| {x['id']} | {tc(x['debut'])} | {tc(x['fin'])} | {x['fin'] - x['debut']:.0f} s | {x['action']} | "
+        L.append(f"| {x['id']} | {tc(x['debut'])} | {tc(x['fin'])} | {duree_txt(x['fin'] - x['debut'])} | {x['action']} | "
                  f"{x.get('confiance', '')} | {pourquoi.replace('|', '/')} |")
     L.append("")
 with open(t / "propositions/rapport.md", "w", encoding="utf-8") as f:
