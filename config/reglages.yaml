@@ -43,9 +43,9 @@ morts:
 hud:
   zone: {x: 1540, y: 0, l: 380, h: 32}
   champs:                 # colonnes (en px) à l'intérieur de la zone
-    kills_bleu: [10, 42]
-    kills_rouge: [50, 75]
-    kda: [120, 180]
+    kills_bleu: [10, 42]    # position de gauche (rangé ensuite d'après la couleur : bleu = ton équipe)
+    kills_rouge: [50, 75]   # position de droite
+    kda: [118, 210]         # élargi : « 9/14/12 » dépassait l'ancienne zone (120-180)
     horloge: [315, 365]
 
 coupes:
@@ -65,9 +65,9 @@ coupes:
 son:
   # Cibles de volume (LUFS, norme ITU-R BS.1770-4)
   micro_lufs: -16
-  jeu_lufs: -24
+  jeu_lufs: -27            # -24 jugé un peu fort face à la voix et la musique (revue v3, 29/09)
   sfx_lufs: -30            # 6 à 8 dB sous la voix
-  musique_lufs: -36        # Resolve refuse une cible < -30 : on fabrique une copie pré-baissée
+  musique_lufs: -33        # validé (revue v2) ; Resolve refuse une cible < -30 : on fabrique une copie pré-baissée
   sfx_moment_max_cible: -26   # volume momentané max d'un effet (sert au gain conseillé)
   fondu_musique_entree_images: 30
   fondu_musique_sortie_images: 90
@@ -88,3 +88,10 @@ resolve:
 intro:
   duree_cible_s: [15, 25]
   styles: ['storytelling', 'spectaculaire', 'humour']
+
+zooms:
+  duree_s: 1.5
+  phase_lane_s: 600
+  ecart_min_s: 30
+  killfeed: {x: 1700, y: 225, l: 220, h: 120, zoom: 1.5, px: 1574, py: 212}
+  kda: {x: 1652, y: 0, l: 100, h: 34, zoom: 3, px: 1604, py: 40}

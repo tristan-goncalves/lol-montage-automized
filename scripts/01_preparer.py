@@ -26,12 +26,17 @@ for p in problemes:
 
 for nom, piste in (("jeu", cfg["video"]["piste_jeu"]), ("micro", cfg["video"]["piste_micro"])):
     sortie = t / f"audio/{nom}.wav"
-    if sortie.exists() and sortie.stat().st_size > 1_000_000:
-        print(f"{nom}.wav déjà présent, on le garde")
+    attendu = int(info["duree_s"] * 48000 * 4)  # 48 kHz, stéréo, 16 bits
+    if sortie.exists() and sortie.stat().st_size > attendu * 0.99:
+        print(f"{nom}.wav déjà présent et complet, on le garde")
         continue
     if piste >= info["pistes_audio"]:
         continue
-    ffmpeg("-i", str(t.video), "-map", f"0:a:{piste}", "-ac", "2", "-ar", "48000", "-c:a", "pcm_s16le", str(sortie))
+    # On écrit dans un fichier temporaire puis on renomme : un fichier interrompu (commande coupée)
+    # n'est jamais pris pour un fichier complet.
+    tmp = sortie.with_name(f"{nom}_en_cours.wav")
+    ffmpeg("-i", str(t.video), "-map", f"0:a:{piste}", "-ac", "2", "-ar", "48000", "-c:a", "pcm_s16le", str(tmp))
+    tmp.replace(sortie)
     print(f"{nom}.wav extrait")
 
 print(f"Dossier de travail : {t.dossier}")

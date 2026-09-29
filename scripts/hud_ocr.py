@@ -87,33 +87,56 @@ def lire(zone_bgr: np.ndarray, modeles: dict, autorises: str) -> str:
     return texte
 
 
+def couleur(zone_bgr: np.ndarray) -> str:
+    """'bleu' ou 'rouge' selon la couleur dominante des chiffres."""
+    z = zone_bgr.astype(int)
+    px = z[z.max(axis=2) > 120]
+    if not len(px):
+        return "?"
+    b, _, r = px.mean(axis=0)
+    return "bleu" if b > r else "rouge"
+
+
 def lire_hud(bandeau_bgr: np.ndarray, modeles: dict, champs: dict) -> dict:
-    autor = {"kda": "0123456789/", "horloge": "0123456789"}
-    return {nom: lire(bandeau_bgr[:, a:b], modeles, autor.get(nom, "0123456789")) for nom, (a, b) in champs.items()}
+    """Lit tous les champs. Ton équipe est toujours affichée en BLEU, mais sa position (gauche ou
+    droite) dépend du côté de la carte : on range donc les scores d'après leur couleur, pas leur place."""
+    autor = {"kda": "0123456789/"}
+    lu = {nom: lire(bandeau_bgr[:, a:b], modeles, autor.get(nom, "0123456789")) for nom, (a, b) in champs.items()}
+    if "kills_bleu" in champs and "kills_rouge" in champs:
+        a, b = champs["kills_bleu"]
+        if couleur(bandeau_bgr[:, a:b]) == "rouge":
+            lu["kills_bleu"], lu["kills_rouge"] = lu["kills_rouge"], lu["kills_bleu"]
+    return lu
 
 
-# Images d'apprentissage : bandeau HUD 380x32 -> valeurs réelles (partie du 17/08)
+# Images d'apprentissage (templates/hud_exemples/) : bandeau HUD 380x32 -> valeurs réelles.
+# L'horloge n'est pas étiquetée (elle avance entre deux images, étiquette peu fiable, et elle ne sert pas).
+# kills_bleu / kills_rouge = nombre de GAUCHE / de DROITE tel qu'affiché (avant rangement par couleur).
 EXEMPLES = {
-    "h_1180.png": {"kills_bleu": "18", "kills_rouge": "17", "kda": "4/2/1", "horloge": "2017"},
-    "h_400.png": {"kills_bleu": "9", "kills_rouge": "4", "kda": "2/0/0", "horloge": "0717"},
-    "h_1500.png": {"kills_bleu": "27", "kills_rouge": "25", "kda": "5/4/3", "horloge": "2537"},
-    "h_960.png": {"kills_bleu": "18", "kills_rouge": "10", "kda": "4/1/1", "horloge": "1637"},
-    "h_1205.png": {"kills_bleu": "20", "kills_rouge": "20", "kda": "5/2/1", "horloge": "2042"},
-    "h_1220.png": {"kills_bleu": "21", "kills_rouge": "20", "kda": "5/2/2", "horloge": "2057"},
-    "h_1300.png": {"kills_bleu": "26", "kills_rouge": "20", "kda": "5/2/3", "horloge": "2217"},
-    "h_700.png": {"kills_bleu": "17", "kills_rouge": "9", "kda": "4/0/1", "horloge": "1217"},
+    "p1_01180.png": {"kills_bleu": "18", "kills_rouge": "17", "kda": "4/2/1"},
+    "p1_00400.png": {"kills_bleu": "9", "kills_rouge": "4", "kda": "2/0/0"},
+    "p1_01500.png": {"kills_bleu": "27", "kills_rouge": "25", "kda": "5/4/3"},
+    "p1_00960.png": {"kills_bleu": "18", "kills_rouge": "10", "kda": "4/1/1"},
+    "p1_01205.png": {"kills_bleu": "20", "kills_rouge": "20", "kda": "5/2/1"},
+    "p1_01220.png": {"kills_bleu": "21", "kills_rouge": "20", "kda": "5/2/2"},
+    "p1_01300.png": {"kills_bleu": "26", "kills_rouge": "20", "kda": "5/2/3"},
+    "p1_00700.png": {"kills_bleu": "17", "kills_rouge": "9", "kda": "4/0/1"},
+    "p2_02650.png": {"kills_bleu": "58", "kills_rouge": "56", "kda": "9/14/12"},
 }
+DOSSIER_EXEMPLES = DEPOT / "templates" / "hud_exemples"
 
-if __name__ == "__main__" and len(sys.argv) >= 3 and sys.argv[1] == "apprendre":
+if __name__ == "__main__" and len(sys.argv) >= 2 and sys.argv[1] == "apprendre":
     import cv2
 
-    dossier = Path(sys.argv[2])
+    dossier = Path(sys.argv[2]) if len(sys.argv) > 2 else DOSSIER_EXEMPLES
     champs = reglages()["hud"]["champs"]
     modeles: dict[str, list] = {}
     for fichier, valeurs in EXEMPLES.items():
         im = cv2.imread(str(dossier / fichier))
         for nom, (a, b) in champs.items():
             cs = caracteres(binariser(im[:, a:b]))
+            if nom not in valeurs:
+                continue
             attendu = valeurs[nom]
             if len(cs) != len(attendu):
                 print(f"⚠ {fichier} {nom} : {len(cs)} caractères trouvés pour « {attendu} », ignoré")
@@ -126,7 +149,8 @@ if __name__ == "__main__" and len(sys.argv) >= 3 and sys.argv[1] == "apprendre":
     mods = charger_modeles()
     erreurs = 0
     for fichier, valeurs in EXEMPLES.items():
-        lu = lire_hud(cv2.imread(str(dossier / fichier)), mods, champs)
+        im = cv2.imread(str(dossier / fichier))
+        lu = {n: lire(im[:, a:b], mods, "0123456789/") for n, (a, b) in champs.items()}  # positions brutes
         for k, v in valeurs.items():
             if lu[k] != v:
                 erreurs += 1

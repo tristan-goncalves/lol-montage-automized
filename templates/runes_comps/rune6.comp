@@ -1,0 +1,101 @@
+Composition {
+	CurrentTime = 0,
+	RenderRange = { 0, 299 },
+	GlobalRange = { 0, 299 },
+	CurrentID = 7,
+	HiQ = true,
+	PlaybackUpdateMode = 0,
+	StereoMode = false,
+	Version = "DaVinci Resolve Studio 21.1.0.0017",
+	SavedOutputs = 0,
+	HeldTools = 0,
+	DisabledTools = 0,
+	LockedTools = 0,
+	AudioOffset = 0,
+	Resumable = true,
+	OutputClips = {
+	},
+	Tools = {
+		Gigote = Transform {
+			Inputs = {
+				Center = Input {
+					Value = { 0.502863891559706, 0.499017024063275 },
+					Expression = "Point(0.5 + 0.003335*sin(time*0.213+2.85) + 0.002*sin(time*0.505+1.88), 0.5 + 0.003335*cos(time*0.209+4.99) + 0.002*sin(time*0.546+4.39))",
+				},
+				Angle = Input {
+					Value = 0.499583972635738,
+					Expression = "0.5*sin(time*0.117+1.53)",
+				},
+				Input = Input {
+					SourceOp = "MediaIn1",
+					Source = "Output",
+				}
+			},
+		},
+		MediaIn1 = Loader {
+			ExtentSet = true,
+			CustomData = { MediaProps = { MEDIA_AUDIO_TRACKS_NUM = 1, MEDIA_ID = "6f93db1a-ae33-43c0-854e-f389ad1b7c2b", MEDIA_MARK_OUT = 299, MEDIA_AUDIO_TRACKS_DESC = { { MEDIA_AUDIO_BIT_DEPTH = 32, MEDIA_AUDIO_TRACK_ID = "Timeline Audio", MEDIA_AUDIO_TRACK_NAME = "Timeline Audio [Template Runes]", MEDIA_AUDIO_START_TIME = 0, MEDIA_AUDIO_FRAME_RATE = 60, MEDIA_AUDIO_SAMPLE_RATE = 48000, MEDIA_AUDIO_NUM_CHANNELS = 2 } }, MEDIA_MARK_IN = 0, MEDIA_NUM_LAYERS = 0, MEDIA_FORMAT_TYPE = "PNG", MEDIA_LAYER_DESC = {
+					}, MEDIA_NAME = "Gathering Storm.png", MEDIA_HEIGHT = 800, MEDIA_WIDTH = 800, MEDIA_START_FRAME = 0, MEDIA_SRC_FRAME_RATE = 60, MEDIA_PATH = "C:\\Users\\Tristan\\Videos\\Records\\League Of Legends\\Runes Artworks\\Mini-Runes\\Gathering Storm.png", MEDIA_HAS_AUDIO = true, MEDIA_NUM_FRAMES = 300, MEDIA_PAR = 1, MEDIA_IS_SOURCE_RES = true }, },
+			Inputs = {
+				GlobalOut = Input { Value = 299, },
+				AudioTrack = Input { Value = FuID { "Timeline Audio" }, },
+				Layer = Input { Value = "0", },
+				ClipTimeEnd = Input { Value = 299, },
+				["Gamut.SLogVersion"] = Input { Value = FuID { "SLog2" }, },
+				DeepOutputMode = Input {
+					Value = 0,
+					Disabled = true,
+				},
+			},
+			Version = 1,
+			Clips = {
+				Clip {
+					ID = "Clip1",
+					Multiframe = true,
+					Filename = "C:\\Users\\Tristan\\Videos\\Records\\League Of Legends\\Runes Artworks\\Mini-Runes\\Gathering Storm.png",
+					Length = 300,
+					LengthSetManually = true,
+					GlobalEnd = 299,
+					TrimOut = 299,
+				}
+			}
+		},
+		MediaOut1 = Saver {
+			Inputs = {
+				Index = Input { Value = "0", },
+				Input = Input {
+					SourceOp = "Gigote",
+					Source = "Output",
+				}
+			},
+		}
+	},
+	Frames = {
+	},
+	Prefs = {
+		Comp = {
+			Interactive = {
+				Proxy = {
+					Scale = 1,
+				},
+			},
+			Paths = {
+				Map = {
+					["ResolveCaches:"] = "C:\\Users\\Tristan\\Videos\\CacheClip\\728ac7f6-5dc4-446b-ae8d-01740d09aed6\\4859f2cc-b4c1-4888-a66a-1e1e950e4dd3\\a1f59bd5-3a1d-4c26-8ad7-bc08b0ae5c88\\Fusion",
+				},
+			},
+			FrameFormat = {
+				Width = 800,
+				Height = 800,
+				Rate = 60,
+				GuideRatio = 1.77777777777778,
+				DepthFull = 3,
+				DepthPreview = 3,
+				DepthInteractive = 3,
+			},
+			Unsorted = {
+				GlobalEnd = 299
+			},
+		}
+	},
+}

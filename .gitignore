@@ -17,3 +17,4 @@ __pycache__/
 *.pyc
 .venv/
 *.sfk
+!templates/hud_exemples/*.png

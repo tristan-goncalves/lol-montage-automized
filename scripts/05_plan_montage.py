@@ -5,6 +5,10 @@ Entrée : propositions/decisions.json, écrit par Claude à partir de tes répon
    "ajustements": {"D3": [debut_s, fin_s]}}
   - Toute coupe évidente (C) non mentionnée ailleurs est coupée par défaut.
   - Tout cas à discuter (D) non mentionné est gardé par défaut (dans le doute, on garde).
+  - "coupes_libres": [[debut_s, fin_s, "raison"], ...] : coupes hors propositions (ex. coups de colère).
+  - "garder_plages": [[debut_s, fin_s], ...] : plages protégées, retirées de toutes les coupes.
+  - Les coupes qui ne viennent pas d'un silence (moments forts M, coupes libres, ajustements) sont recalées
+    pour ne jamais couper au milieu d'une phrase (transcription).
 
 Sortie : propositions/plan_v1.json avec, pour chaque morceau gardé, les images source et
 d'enregistrement, prêtes pour media_pool.append_to_timeline (vidéo V1, jeu A1, micro A2).
@@ -27,11 +31,43 @@ couper = set(dec.get("couper", [])) | {i for i, x in items.items() if x["cat"] =
 accel = set(dec.get("accelerer", []))
 ajust = dec.get("ajustements", {})
 
+phrases = [(s["debut"], s["fin"]) for s in t.lire("analyse/transcription.json")]
+
+
+def recaler(a, b):
+    """Déplace les bords d'une coupe hors des phrases : on garde la phrase si elle est surtout hors de la coupe."""
+    for d, f in phrases:
+        if d < a < f:
+            a = f if (a - d) > (f - a) else d
+        if d < b < f:
+            b = d if (f - b) > (b - d) else f
+    return a, b
+
+
 zones = []  # (debut, fin, type) avec type "coupe" ou "accel"
 for i in couper | accel:
     x = items[i]
     a, b = ajust.get(i, (x["debut"], x["fin"]))
-    zones.append((a, b, "accel" if i in accel else "coupe"))
+    if x["cat"] == "M" or i in ajust:
+        a, b = recaler(a, b)
+    if b > a:
+        zones.append((a, b, "accel" if i in accel else "coupe"))
+for a, b, *_ in dec.get("coupes_libres", []):
+    a, b = recaler(a, b)
+    if b > a:
+        zones.append((a, b, "coupe"))
+# plages protégées : retirées des coupes
+for ga, gb in dec.get("garder_plages", []):
+    nouvelles = []
+    for a, b, typ in zones:
+        if typ == "coupe" and a < gb and b > ga:
+            if a < ga:
+                nouvelles.append((a, ga, typ))
+            if b > gb:
+                nouvelles.append((gb, b, typ))
+        else:
+            nouvelles.append((a, b, typ))
+    zones = nouvelles
 zones.sort()
 
 morceaux, pos = [], 0.0
@@ -43,7 +79,7 @@ for a, b, typ in zones:
     pos = max(pos, b)
 if pos < duree:
     morceaux.append((pos, duree, 1))
-morceaux = [m for m in morceaux if m[1] - m[0] >= 1 / fps]
+morceaux = [m for m in morceaux if m[1] - m[0] >= 0.5]  # pas de miettes de moins d'une demi-seconde
 
 plan, rec = [], 0
 for a, b, vitesse in morceaux:

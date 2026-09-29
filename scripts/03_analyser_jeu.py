@@ -5,7 +5,7 @@ Travaille PAR TRANCHES et reprend où il s'est arrêté : relance le script tant
 « À RELANCER » (utile quand une commande est limitée dans le temps, comme dans Cowork).
 
 Sorties : analyse/volume.json, analyse/morts.json, analyse/noirs.json, analyse/hud.json, analyse/evenements.json
-Usage : python scripts/03_analyser_jeu.py "<vidéo.mp4>" [--budget 150] [--sans-hud]
+Usage : python scripts/03_analyser_jeu.py "<vidéo.mp4>" [--budget 150] [--sans-hud] [--relire-hud]
 """
 import re
 import subprocess
@@ -91,6 +91,15 @@ while etat["fait_jusqua"] < duree - 0.5:
     etat["fait_jusqua"] = s + d
     t.ecrire("analyse/_image_partiel.json", etat)
     duree_tranche_mesuree = time.time() - t0
+
+if "--relire-hud" in sys.argv and not SANS_HUD:
+    # Relit les bandeaux HUD déjà sauvegardés (après amélioration des modèles), sans repasser sur la vidéo
+    for h in etat["hud"]:
+        img = t / f"analyse/hud_images/{int(h['t']):05d}.png"
+        if img.exists():
+            h.update(lire_hud(cv2.imread(str(img)), MODELES_HUD, cfg["hud"]["champs"]))
+    t.ecrire("analyse/_image_partiel.json", etat)
+    print("HUD relu avec les modèles actuels")
 
 if etat["fait_jusqua"] < duree - 0.5:
     print(f"À RELANCER : image analysée jusqu'à {tc(etat['fait_jusqua'])} sur {tc(duree)}")

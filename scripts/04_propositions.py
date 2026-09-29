@@ -2,7 +2,8 @@
   C = coupes évidentes (confiance élevée), D = cas à discuter, M = moments forts, I = idées / intros.
 
 Les idées (I) et les intros sont rédigées par Claude dans propositions/idees.json (liste de
-{"debut", "fin", "texte"}) : ce script les intègre au rapport et aux marqueurs.
+{"debut", "fin", "texte"}), et les coupes de contenu dans propositions/coupes_contenu.json
+(liste de {"debut", "fin", "action", "confiance", "raison"}) : ce script les intègre au rapport et aux marqueurs.
 
 Sorties : propositions/propositions.json, propositions/rapport.md, propositions/marqueurs.json
 Usage : python scripts/04_propositions.py "<vidéo.mp4>"
@@ -66,6 +67,11 @@ for s0, s1 in silences:
         D.append([a, b, "couper", "moyenne", f"Silence de {s1 - s0:.0f} s avec un peu d'action en jeu"])
     elif s1 - s0 >= c["accelerer_min_s"]:
         D.append([a, b, "accélérer ×2", "moyenne", f"Silence de {s1 - s0:.0f} s mais de l'action à l'écran"])
+
+# Coupes de contenu rédigées par Claude à partir de la transcription (digressions, analyses trop longues…)
+if (t / "propositions/coupes_contenu.json").exists():
+    for x in t.lire("propositions/coupes_contenu.json"):
+        D.append([x["debut"], x["fin"], x.get("action", "couper"), x.get("confiance", "moyenne"), x["raison"]])
 
 for a, b in noirs:
     if b - a >= 0.3:
@@ -133,7 +139,10 @@ L = [f"# Propositions de montage — {t.nom}", "",
      f"- Après les coupes évidentes : **{tc(duree - total_c)}** ({len(C)} coupes, {tc(total_c)} retirées)",
      f"- Si tu valides aussi toutes les coupes « à discuter » : **{tc(duree - total_c - total_d)}**",
      f"- Morts détectées : {', '.join(tc(m[0]) for m in morts) or 'aucune'}",
-     "", "Réponds par numéro : « C OK sauf C4 », « D2 accélérer », « D5 garder »…", ""]
+     "", "**Pour décider** : dans Resolve, change la couleur des marqueurs de la timeline « 00 Rush annoté » "
+     "(double-clic sur le marqueur > Color) — **Rouge** = couper, **Vert** = garder, **Cyan** = accélérer ×2, "
+     "Jaune = pas décidé (gardé). Idées / intros : **Vert** = je prends, **Rouge** = non. "
+     "Déplacer ou rallonger un marqueur ajuste la coupe. Puis dis « c'est bon ».", ""]
 for cat in "CDMI":
     lignes = [x for x in items if x["cat"] == cat]
     if not lignes:
